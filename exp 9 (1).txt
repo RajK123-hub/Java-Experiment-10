@@ -1,0 +1,187 @@
+Main.java
+
+package com.example;
+
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        AppConfig config = new AppConfig();
+        StudentService service = config.studentService();
+        Scanner sc = new Scanner(System.in);
+        int choice;
+
+        do {
+            System.out.println("\n===== ONLINE STUDENT MANAGEMENT SYSTEM =====");
+            System.out.println("1. Add Student");
+            System.out.println("2. View Students");
+            System.out.println("3. Delete Student");
+            System.out.println("4. Pay Fee");
+            System.out.println("5. Refund Fee");
+            System.out.println("6. Exit");
+            System.out.print("Enter your choice: ");
+            choice = sc.nextInt();
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter ID: ");
+                    int id = sc.nextInt();
+                    sc.nextLine(); // consume newline
+                    System.out.print("Enter Name: ");
+                    String name = sc.nextLine();
+                    System.out.print("Enter Course: ");
+                    String course = sc.nextLine();
+                    System.out.print("Enter Balance: ");
+                    double balance = sc.nextDouble();
+                    Student student = new Student(id, name, course, balance);
+                    service.addStudent(student);
+                    break;
+
+                case 2:
+                    service.viewStudents();
+                    break;
+
+                case 3:
+                    System.out.print("Enter Student ID to delete: ");
+                    int deleteId = sc.nextInt();
+                    service.deleteStudent(deleteId);
+                    break;
+
+                case 4:
+                    System.out.print("Enter Student ID for payment: ");
+                    int payId = sc.nextInt();
+                    System.out.print("Enter amount to pay: ");
+                    double payAmount = sc.nextDouble();
+                    service.payFee(payId, payAmount);
+                    break;
+
+                case 5:
+                    System.out.print("Enter Student ID for refund: ");
+                    int refundId = sc.nextInt();
+                    System.out.print("Enter amount to refund: ");
+                    double refundAmount = sc.nextDouble();
+                    service.refundFee(refundId, refundAmount);
+                    break;
+
+                case 6:
+                    System.out.println("👋 Exiting... Goodbye!");
+                    break;
+
+                default:
+                    System.out.println("⚠️ Invalid choice! Try again.");
+            }
+        } while (choice != 6);
+
+        sc.close();
+    }
+}
+
+Student.java
+
+package com.example;
+public class Student {
+    private int id;
+    private String name;
+    private String course;
+    private double balance;
+
+    public Student(int id, String name, String course, double balance) {
+        this.id = id;
+        this.name = name;
+        this.course = course;
+        this.balance = balance;
+    }
+
+    // Getters and Setters
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getCourse() { return course; }
+    public void setCourse(String course) { this.course = course; }
+
+    public double getBalance() { return balance; }
+    public void setBalance(double balance) { this.balance = balance; }
+
+    @Override
+    public String toString() {
+        return "Student ID: " + id + ", Name: " + name + ", Course: " + course + ", Balance: " + balance;
+    }
+}
+
+
+StudentService.java
+
+package com.example;
+import java.util.ArrayList;
+import java.util.List;
+
+public class StudentService {
+    private List<Student> students = new ArrayList<>();
+
+    // Add a new student
+    public void addStudent(Student student) {
+        students.add(student);
+        System.out.println("✅ Student added successfully!");
+    }
+
+    // View all students
+    public void viewStudents() {
+        if (students.isEmpty()) {
+            System.out.println("⚠️ No students found.");
+        } else {
+            System.out.println("\n--- Student List ---");
+            for (Student s : students) {
+                System.out.println(s);
+            }
+        }
+    }
+
+    // Delete a student by ID
+    public void deleteStudent(int id) {
+        boolean removed = students.removeIf(s -> s.getId() == id);
+        if (removed) {
+            System.out.println("🗑️ Student deleted successfully!");
+        } else {
+            System.out.println("❌ Student not found.");
+        }
+    }
+
+    // Pay fee
+    public void payFee(int id, double amount) {
+        for (Student s : students) {
+            if (s.getId() == id) {
+                s.setBalance(s.getBalance() - amount);
+                System.out.println("💰 Fee payment successful! Remaining balance: " + s.getBalance());
+                return;
+            }
+        }
+        System.out.println("❌ Student not found for payment.");
+    }
+
+    // Refund
+    public void refundFee(int id, double amount) {
+        for (Student s : students) {
+            if (s.getId() == id) {
+                s.setBalance(s.getBalance() + amount);
+                System.out.println("💵 Refund successful! Updated balance: " + s.getBalance());
+                return;
+            }
+        }
+        System.out.println("❌ Student not found for refund.");
+    }
+}
+
+AppConfig.java
+
+package com.example;
+
+// This class simulates Spring-style Dependency Injection manually
+public class AppConfig {
+    public StudentService studentService() {
+        return new StudentService(); // "Inject" dependency manually
+    }
+}
+
